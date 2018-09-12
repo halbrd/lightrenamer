@@ -4,8 +4,10 @@ import requests
 import os
 from glob import glob
 import re
+from pprint import pprint   # TODO: remove
 
 CREDENTIALS_FILE = 'lightrenamer-credentials.json'
+EPISODE_INDEX_PATTERN = '[Ss]?(\d?\d)[EeXx](\d\d)'
 
 api = lambda path: 'https://api.thetvdb.com' + path
 std_headers = {'Content-Type': 'application/json'}
@@ -51,10 +53,10 @@ def process_files(files):
         # get index of term that contains episode index
         episode_index_index = None
         for i, term in enumerate(file):
-            if re.fullmatch('[Ss]?\d?\d[Eex]\d\d', term):
+            if re.fullmatch(EPISODE_INDEX_PATTERN, term):
                 episode_index_index = i
         if episode_index_index is None:
-            raise ValueError('no valid season/episode index found')
+            raise ValueError(f'no valid season/episode index found in \'{file_name}\'')
 
         show_name = ' '.join(file[:episode_index_index])
         episode_index = file[episode_index_index]
@@ -88,6 +90,13 @@ def get_episodes(show_id):
 
     return data
 
+def get_episode_by_index(episodes, season_no, episode_no, aired_order=False):
+    ordering_type = 'aired' if aired_order else 'dvd'
+    season_key = ordering_type + 'Season'
+    episode_key = ordering_type + 'EpisodeNumber'
+
+    return next(episode for episode in episodes if episode[season_key] == season_no and episode[episode_key] == episode_no)
+
 
 
 if __name__ == '__main__':
@@ -106,8 +115,13 @@ if __name__ == '__main__':
     for show_name, episodes in sorted_files.items():
         show_id = get_show_id_from_name(show_name)
         show_episodes = get_episodes(show_id)
+        pprint(str(show_episodes)[:500])
 
         for episode_index, file_name in episodes.items():
-            match = re.match('[Ss]?(\d?\d)[Eex](\d\d)', episode_index)
-            season, episode = match.group(1), match.group(2)
+            match = re.match(EPISODE_INDEX_PATTERN, episode_index)
+            season, episode = int(match.group(1)), int(match.group(2))
             print(season, episode)
+
+            episode = get_episode_by_index(show_episodes, season, episode)
+            print(episode)
+
