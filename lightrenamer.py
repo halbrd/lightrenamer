@@ -138,6 +138,6 @@ if __name__ == '__main__':
         print('New: ' + new)
         print()
 
-    if input('Continue? (y/n) ') in { 'y', '' }:
+    if input('Continue? (y/n) ').lower() == 'y':
         for original, new in rename_tasks:
             os.rename(original, new)
