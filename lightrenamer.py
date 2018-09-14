@@ -131,6 +131,8 @@ if __name__ == '__main__':
 
             rename_tasks.append((file_name, result_filename))
 
+    rename_tasks = list(filter(lambda task: task[0] != task[1], rename_tasks))
+
     for original, new in rename_tasks:
         print('Old: ' + original)
         print('New: ' + new)
