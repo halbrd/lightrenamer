@@ -109,20 +109,25 @@ if __name__ == '__main__':
     sorted_files = process_files(files)
 
     rename_tasks = []
-    for show_name, episodes in sorted_files.items():
+    for show_name in sorted(sorted_files.keys()):
+        episodes = sorted_files[show_name]
+
         show = get_show_from_name(show_name)
         show_id = show['id']
         clean_show_name = show['seriesName']
 
         show_episodes = get_episodes(show_id)
 
-        for episode_index, file_name in episodes.items():
+        for episode_index in sorted(episodes.keys()):
+            file_name = episodes[episode_index]
+
             extension = file_name.split('.')[-1]
             match = re.match(EPISODE_INDEX_PATTERN, episode_index)
             season, episode = int(match.group(1)), int(match.group(2))
 
             episode_data = get_episode_by_index(show_episodes, season, episode, args.aired_order)
             result_filename = f'{clean_show_name} S{str(season).zfill(2)}E{str(episode).zfill(2)} - {episode_data["episodeName"]}.{extension}'
+            result_filename = result_filename.replace(':', '-').replace('/',  '-')
 
             rename_tasks.append((file_name, result_filename))
 
