@@ -34,14 +34,10 @@ def get_auth_jwt(apikey):
     if apikey is not None:
         credentials['apikey'] = apikey
 
-    if not 'jwt' in credentials:
-        credentials['jwt'] = login(apikey)
+        with open(CREDENTIALS_FILE, 'w') as f:
+            json.dump(credentials, f)
 
-    # write updated credentials to file
-    with open(CREDENTIALS_FILE, 'w') as f:
-        json.dump(credentials, f)
-
-    return credentials['jwt'] 
+    return login(credentials['apikey'])
 
 def process_files(files):
     organized_files = {}
@@ -95,13 +91,14 @@ def get_episode_by_index(episodes, season_no, episode_no, aired_order=False):
     season_key = ordering_type + 'Season'
     episode_key = ordering_type + 'EpisodeNumber'
 
-    return next(episode for episode in episodes if episode[season_key] == season_no and episode[episode_key] == episode_no)
+    return next(episode for episode in episodes if episode[season_key] == int(season_no) and episode[episode_key] == int(episode_no))
 
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--apikey', help='thetvdb api token (only needed the first time)')
+    parser.add_argument('--aired-order', action='store_true', help='use the aired order of episodes instead of the dvd order')
     parser.add_argument('pattern', nargs='?', help='regexp to match files to rename')
     args = parser.parse_args()
 
@@ -120,11 +117,20 @@ if __name__ == '__main__':
         show_episodes = get_episodes(show_id)
 
         for episode_index, file_name in episodes.items():
+            extension = file_name.split('.')[-1]
             match = re.match(EPISODE_INDEX_PATTERN, episode_index)
             season, episode = int(match.group(1)), int(match.group(2))
-            print(season, episode)
 
-            episode_data = get_episode_by_index(show_episodes, season, episode)
-            filename = f'{clean_show_name} S{str(season).zfill(2)}E{str(episode).zfill(2)} - {episode_data["episodeName"]}'
-            print(filename)
+            episode_data = get_episode_by_index(show_episodes, season, episode, args.aired_order)
+            result_filename = f'{clean_show_name} S{str(season).zfill(2)}E{str(episode).zfill(2)} - {episode_data["episodeName"]}.{extension}'
 
+            rename_tasks.append((file_name, result_filename))
+
+    for original, new in rename_tasks:
+        print('Old: ' + original)
+        print('New: ' + new)
+        print()
+
+    if input('Continue? (y/n) ') in { 'y', '' }:
+        for original, new in rename_tasks:
+            os.rename(original, new)
