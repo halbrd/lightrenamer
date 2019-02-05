@@ -44,4 +44,4 @@ python3 lightrenamer.py --aired-order Avatar
 ```
 
 ## Customization
-There aren't many options baked into the script by default, as the design philosophy is to be lightweight. The script is so short and simple that and changes to its behaviour are better left to end user modifications of the script rather than being built in, tested, and supported.
+There aren't many options baked into the script by default, as the design philosophy is to be lightweight. The script is so short and simple that changes to its behaviour are better left to end user modifications of the script rather than being built in, tested, and supported.
