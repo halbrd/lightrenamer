@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+
+# TODO: clean up code
+# TODO: explicitly specify show id
+# TODO: explicitly specify episode index format
+# TODO: explicitly specify output file name format
+# TODO: save api key in common location (XDG_CONFIG_HOME or %APPDATA%)
+# TODO: match everything when pattern parameter isn't provided
+
 import argparse
 import json
 import requests
@@ -91,7 +100,10 @@ def get_episode_by_index(episodes, season_no, episode_no, aired_order=False):
     season_key = ordering_type + 'Season'
     episode_key = ordering_type + 'EpisodeNumber'
 
-    return next(episode for episode in episodes if episode[season_key] == int(season_no) and episode[episode_key] == int(episode_no))
+    try:
+        return next(episode for episode in episodes if episode[season_key] == int(season_no) and episode[episode_key] == int(episode_no))
+    except StopIteration:
+        raise ValueError(f'one or more episodes don\'t have DVD ordering; try using --aired-order')
 
 
 
