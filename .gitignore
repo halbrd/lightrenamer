@@ -1,7 +1,8 @@
 lightrenamer-credentials.json
 
 
-
+# macOS crap
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
