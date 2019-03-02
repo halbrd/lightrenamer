@@ -105,6 +105,10 @@ def get_episode_by_index(episodes, season_no, episode_no, aired_order=False):
     except StopIteration:
         raise ValueError(f'one or more episodes don\'t have DVD ordering; try using --aired-order')
 
+def clean_string(string, replacement='', colon_replacement='-'):
+	illegals = '<>:"/\\|?*'
+	return ''.join(c for c in string.replace(':', colon_replacement) if c not in illegals)
+
 
 
 if __name__ == '__main__':
@@ -126,7 +130,7 @@ if __name__ == '__main__':
 
         show = get_show_from_name(show_name)
         show_id = show['id']
-        clean_show_name = show['seriesName']
+        clean_show_name = clean_string(show['seriesName'])
 
         show_episodes = get_episodes(show_id)
 
@@ -138,7 +142,8 @@ if __name__ == '__main__':
             season, episode = int(match.group(1)), int(match.group(2))
 
             episode_data = get_episode_by_index(show_episodes, season, episode, args.aired_order)
-            result_filename = f'{clean_show_name} S{str(season).zfill(2)}E{str(episode).zfill(2)} - {episode_data["episodeName"]}.{extension}'
+            clean_episode_name = clean_string(episode_data["episodeName"])
+            result_filename = f'{clean_show_name} S{str(season).zfill(2)}E{str(episode).zfill(2)} - {clean_episode_name}.{extension}'
             result_filename = result_filename.replace(':', '-').replace('/',  '-')
 
             rename_tasks.append((file_name, result_filename))
