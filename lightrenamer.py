@@ -13,9 +13,10 @@ import requests
 import os
 from glob import glob
 import re
-from pprint import pprint   # TODO: remove
+from pathlib import Path
 
-CREDENTIALS_FILE = 'lightrenamer-credentials.json'
+CREDENTIALS_FILE = os.getenv('XDG_CONFIG_HOME', os.environ['HOME'] + '/.config') + '/lightrenamer/credentials.json'
+CREDENTIALS_FILE = Path(CREDENTIALS_FILE)
 EPISODE_INDEX_PATTERN = '[Ss]?(\d?\d)[EeXx](\d\d)'
 
 api = lambda path: 'https://api.thetvdb.com' + path
@@ -29,10 +30,10 @@ def get_auth_jwt(apikey):
                              json={'apikey': apikey}).json()['token']
 
     # read credentials
-    if not os.path.isfile(CREDENTIALS_FILE):
+    if not CREDENTIALS_FILE.is_file():
         credentials = {}
     else:
-        with open(CREDENTIALS_FILE, 'r') as f:
+        with CREDENTIALS_FILE.open('r') as f:
             credentials = json.load(f)
 
     # ensure we have an API key
@@ -43,7 +44,8 @@ def get_auth_jwt(apikey):
     if apikey is not None:
         credentials['apikey'] = apikey
 
-        with open(CREDENTIALS_FILE, 'w') as f:
+        CREDENTIALS_FILE.parents[0].mkdir(parents=True, exist_ok=True)
+        with CREDENTIALS_FILE.open('w') as f:
             json.dump(credentials, f)
 
     return login(credentials['apikey'])
