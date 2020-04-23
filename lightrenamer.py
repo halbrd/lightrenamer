@@ -75,9 +75,13 @@ def process_files(files):
     return organized_files
 
 def get_show_from_name(search_term):
-    return requests.get(api('/search/series'),
+    shows = requests.get(api('/search/series'),
                         headers=std_headers,
-                        params={'name': search_term}).json()['data'][0]
+                        params={'name': search_term}).json()['data']
+    show_names = [show['seriesName'] for show in shows]
+    options = [f'{i + 1}. {show}' for i, show in enumerate(show_names)]
+    print('\n'.join(options))
+    return shows[int(input('select show by number: ')) - 1]
 
 def get_episodes(show_id):
     episodes = requests.get(api(f'/series/{show_id}/episodes'),
