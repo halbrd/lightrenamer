@@ -75,9 +75,15 @@ def process_files(files):
     return organized_files
 
 def get_show_from_name(search_term):
-    shows = requests.get(api('/search/series'),
-                        headers=std_headers,
-                        params={'name': search_term}).json()['data']
+    shows_response = requests.get(api('/search/series'),
+        headers=std_headers,
+        params={'name': search_term}).json()
+    try:
+        shows = shows_response['data']
+    except KeyError as e:
+        print('bad API response:', shows_response)
+        raise e
+
     show_names = [show['seriesName'] for show in shows]
     options = [f'{i + 1}. {show}' for i, show in enumerate(show_names)]
     print('\n'.join(options))
